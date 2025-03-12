@@ -27,25 +27,29 @@ class particle:
     # TODO: You need to explain the following function to TA
     def calculateParticleWeight(self, scanOutput: LaserScan, mapManipulatorInstance: mapManipulator, laser_to_odom_transformation: np.array):
 
-        T = np.matmul(self.__poseToTranslationMatrix(), laser_to_odom_transformation)
+        "Comments are what I'm pretty sure these do"
+        
+        T = np.matmul(self.__poseToTranslationMatrix(), laser_to_odom_transformation) "Takes the current pose and converts into "
 
-        _, scanCartesianHomo = convertScanToCartesian(scanOutput)
-        scanInMap = np.dot(T, scanCartesianHomo.T).T
+        _, scanCartesianHomo = convertScanToCartesian(scanOutput) "Converts the scanned area (lidar) to cartesian coordinates"
+        scanInMap = np.dot(T, scanCartesianHomo.T).T 
 
-        likelihoodField = mapManipulatorInstance.getLikelihoodField()
+        likelihoodField = mapManipulatorInstance.getLikelihoodField() "Takes likelihood field generated in mapUtilities"
         cellPositions = mapManipulatorInstance.position_2_cell(
             scanInMap[:, 0:2])
 
         lm_x, lm_y = likelihoodField.shape
 
         cellPositions = cellPositions[np.logical_and.reduce(
-                (cellPositions[:, 0] > 0, -cellPositions[:, 1] > 0, cellPositions[:, 0] < lm_y,  -cellPositions[:, 1] < lm_x))]
+                (cellPositions[:, 0] > 0, -cellPositions[:, 1] > 0, cellPositions[:, 0] < lm_y,  -cellPositions[:, 1] < lm_x))] "Takes only positions in likelihood field limits"
 
         log_weights = np.log(
             likelihoodField[-cellPositions[:, 1], cellPositions[:, 0]])
         log_weight = np.sum(log_weights)
         weight = np.exp(log_weight)
-        weight += 1e-10
+        weight += 1e-10 
+        
+        "Takes the sum of the logs of the likelihood field to calculate the importance weight of current particle/position"
 
         self.setWeight(weight)
 
