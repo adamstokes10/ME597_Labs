@@ -123,8 +123,7 @@ class decision_maker(Node):
 
             return
         
-        velocity, yaw_rate = self.controller.\
-            vel_request(self.localizer.getPose(), self.goal, True)
+        velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
 
         
         vel_msg.linear.x=velocity
