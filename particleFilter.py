@@ -1,5 +1,3 @@
-
-
 import rclpy
 from particle import particle
 from rclpy.node import Node
@@ -100,13 +98,16 @@ class particleFilter(Node):
         numParticles = self.numParticles
 
         # TODO: generate the particles around the initial pose (x, y, th) (you should use the std_particle_x, std_particle_y, std_particle_theta)
-        self.particlePoses = ... #size should be (numParticles, 3)
 
-        self.particles = [particle(particle_, 1/numParticles) for particle_ in
-                          self.particlePoses]
+        self.particlePoses = np.zeros((numParticles, 3)) #size should be (numParticles, 3)
 
+        for i in range(numParticles):
+            self.particlePoses[i, 0] = x + np.random.normal(0, self.std_particle_x)
+            self.particlePoses[i, 1] = y + np.random.normal(0, self.std_particle_y)
+            self.particlePoses[i, 2] = th + np.random.normal(0, self.std_particle_theta)
+
+        self.particles = [particle(particle_, 1/numParticles) for particle_ in self.particlePoses]
         self.weights = [1/numParticles] * numParticles
-
         self.initialized = True
 
 
@@ -163,7 +164,7 @@ class particleFilter(Node):
         for particle in self.particles:
             particle.setWeight(particle.getWeight()/sumWeight)
 
-
+    
     def resample(self, laser_scan, mapUtilInstance):
         std_noise = 0.05
         generated_particles = []
@@ -173,14 +174,14 @@ class particleFilter(Node):
         particles_weights = particles_weights / np.sum(particles_weights)
         
         # TODO: randomly sampling N particles from the list of particles based on their weights (hint: use np.random.choice)
-        sampled_particles = ...
+        sampled_particles = np.random.choice(self.particles, size=self.numParticles, p=particles_weights)
 
         for bp in sampled_particles:
             x, y, th = bp.getPose()
             # TODO: add noise to the x, y, and th, use the same std_noise for x, y, and th
-            new_x = x + ...
-            new_y = y + ...
-            new_th = th + ...
+            new_x = x + np.random.normal(0, std_noise)
+            new_y = y + np.random.normal(0, std_noise)
+            new_th = th + np.random.normal(0, std_noise)
 
             new_particle = particle([new_x, new_y, new_th], bp.getWeight())
 
@@ -192,6 +193,7 @@ class particleFilter(Node):
         self.particles = generated_particles
 
         return self.particles
+
 
 
     def filterCallback(self, odomMsg: Odometry, laserMsg: LaserScan):
