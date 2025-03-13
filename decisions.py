@@ -46,7 +46,6 @@ class decision_maker(Node):
         self.reachThreshold=0.1
 
         # TODO part 5: call the proper types
-        # ADAM: change this when we're doing lab to select particlesFilter or not
         self.localizer=localization(particlesFilter)
         #self.localizer=localization(rawSensors)
         

@@ -169,35 +169,35 @@ class mapManipulator(Node):
 
     # TODO part 4: See through this method and explain how it works to the TA
     def make_likelihood_field(self):
-        
-        image_array=self.image_array
+    
+        image_array=self.image_array #2d array
 
-        from sklearn.neighbors import KDTree
+        from sklearn.neighbors import KDTree 
         
         indices = np.where(image_array < 10)
         indices_arr = np.array([indices[0], indices[1]]).T
         
-        occupied_points = self.cell_2_position(indices_arr)
+        occupied_points = self.cell_2_position(indices_arr) #makes occupancy map of all points that have obsticle (from current position)
         all_indices = np.array([[i, j] for i in range(self.height) for j in range(self.width)])
-        all_positions = self.cell_2_position(all_indices)
+        all_positions = self.cell_2_position(all_indices) #converting to actual position in x and y
 
-        kdt=KDTree(occupied_points)
+        kdt=KDTree(occupied_points) #sets this data into a KDTree data structure
 
-        dists=kdt.query(all_positions, k=1)[0][:]
-        probabilities=np.exp( -(dists**2) / (2*self.laser_sig**2))
+        dists=kdt.query(all_positions, k=1)[0][:] #use the KDTree to find the closet point in all directions of lidar scan
+        probabilities=np.exp( -(dists**2) / (2*self.laser_sig**2)) #convert this to gaussian with distance being x from mean of 0
         
         likelihood_field=probabilities.reshape(image_array.shape)
         
-        likelihood_field_img=np.array(255-255*probabilities.reshape(image_array.shape), dtype=np.int32)
+        likelihood_field_img=np.array(255-255*probabilities.reshape(image_array.shape), dtype=np.int32) #number conversion
         
-        self.likelihood_img=likelihood_field_img
+        self.likelihood_img=likelihood_field_img #gives likelyhood image of current time step
         
-        self.occ_points=np.array(occupied_points)
+        self.occ_points=np.array(occupied_points) #attribute of class
         
                 
         #self.plot_pgm_image(likelihood_field_img)
 
-        self.likelihood_field = likelihood_field
+        self.likelihood_field = likelihood_field #attribute of class
         
         return likelihood_field
                 
